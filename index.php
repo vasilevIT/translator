@@ -13,7 +13,7 @@ function setText(text)
 </script>
 </head>
 <?php
-
+//github hello
 require_once(__DIR__."/classes/translator.class.php");
 if (isset($_POST['code']))
 {
