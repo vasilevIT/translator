@@ -1,9 +1,9 @@
 <head>
 <title>Транслятор</title>
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="scripts/tinymce/tinymce.min.js"></script>
   <script>tinymce.init({selector:"textarea"});</script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="scripts/jquery.js"></script>
 <script>
 function setText(text)
 {
