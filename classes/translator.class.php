@@ -136,13 +136,25 @@ class Translator
 			$this->language();
 		}		
 		catch(Exception $e) {
-  		  echo '<pre>Выброшено исключение: ',  $e->getMessage(), "\n","символ:",$this->current_index,"</pre>";
-  		  $this->skipSpaces();
-  		  $text= mb_substr($this->inputCode, 0,$this->current_index).
+  		  echo '<pre>Выброшено исключение: ',  $e->getMessage(), "\n","символ:",$this->current_index," ",mb_substr($this->inputCode, $this->current_index,4),"</pre>";
+  		  $this->skipSpaces(true);
+  		  if (mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))=="")
+  		  {
+  		  	$this->current_index+=2;
+			$text= mb_ereg_replace("\r\n","",mb_substr($this->inputCode, 0,$this->current_index)).
   		  "<span style='background-color:red;'>"
-  		  .mb_substr($this->inputCode, $this->current_index,1)
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))
   		  ."</span>"
-  		  .mb_substr($this->inputCode, $this->current_index+1,mb_strwidth($this->inputCode)-$this->current_index);
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+2,mb_strwidth($this->inputCode)-$this->current_index));
+  		  }
+  		  else
+  		  {
+  		  $text= mb_ereg_replace("\r\n","",mb_substr($this->inputCode, 0,$this->current_index)).
+  		  "<span style='background-color:red;'>"
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))
+  		  ."</span>"
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+2,mb_strwidth($this->inputCode)-$this->current_index));
+  			}
 
   		  $text = mb_ereg_replace("@", "<p>", $text);
   		  $text = mb_ereg_replace("#", "</p>", $text);
@@ -166,7 +178,7 @@ class Translator
   		  </script>";
 	}
 	//пропустить пробелы и перенос строки(вызывать до получения символа или проверки на терминал)
-	private function skipSpaces(){
+	private function skipSpaces($skipRN=false){
 		while(true){
 			$ch = $this->getChar($this->current_index);
 			if ($ch=="&")
@@ -180,16 +192,29 @@ class Translator
 
 			}
 			else
-			if ($ch=="\r" || $ch=="\n"|| $ch==" "|| $ch=="@"|| $ch=="#")
+			if ($ch==" "|| $ch=="@"|| $ch=="#")
 			{
 			$this->current_index++;
 				continue;
 			}
-			else
+			else if($skipRN)
+			{
+				if ($ch=="\r" || $ch=="\n")
+				{
+
+			$this->current_index++;
+				continue;
+				}else
+				{
+					break;
+				
+				}
+			}else
 			{
 				break;
 			
 			}
+			
 		};
 	}
 	private function getChar($i)
@@ -205,7 +230,7 @@ class Translator
 		zvenia();
 		Конец
 		*/
-		$this->skipSpaces();
+		$this->skipSpaces(true);
 		if ( mb_substr($this->inputCode,$this->current_index,mb_strwidth("Программа")) != "Программа")
 		//if (mb_strtolower( mb_substr($this->inputCode,$this->current_index,mb_strwidth("Программа"))) != "программа")
 		{
@@ -266,7 +291,7 @@ class Translator
 		/*
 		Ввод for(;;) word()
 		*/
-		$this->skipSpaces();
+		$this->skipSpaces(true);
 		if (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Ввод")) != "Ввод")
 		{
 			throw new Exception("Ожидалось слово \"Ввод\"");
@@ -277,18 +302,27 @@ class Translator
 			if ($this->current_index>mb_strwidth($this->inputCode))
 				break;
 			if ($this->k!=0) return;
-		$this->skipSpaces();
+			$this->skipSpaces(false);//тут надо как-то делить переменные по переводу строки
+			if(($this->getChar($this->current_index)=="\r") and ($this->getChar($this->current_index+1)=="\n"))
+			{
+				//$this->current_index +=2;
+				$this->skipSpaces(true);
+			}
+			/* // изменили разделитель: запятую на перевод строки
+			else
 			if ($this->getChar($this->current_index)==",")
 			{
 				$this->current_index++;
 			}
-			elseif(!(($this->missInt($this->current_index)!=":") and ($this->getChar($this->current_index)!=";") and ($this->getChar($this->current_index)!=",") and (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец")) != "Конец")))
+			*/
+			elseif(!(($this->missInt($this->current_index)!=":") and ($this->getChar($this->current_index)!=";") and /*($this->getChar($this->current_index)!=",") and */ (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец")) != "Конец")))
 			{
 				;//Выходим
 			}
+			
 			else
 			{
-				throw new Exception("Ожидалось \",\"");
+				throw new Exception("Ожидалось перевод строки");
 
 			}
 		$this->skipSpaces();
@@ -302,27 +336,11 @@ class Translator
 		/*
 		int":"perem"="rightPart()
 		*/
-		/*
-		do{
-			$ch = $this->getChar($this->current_index);
-			echo $ch;
-			if ($ch==":")
-				break;
-			else
-			{
-				if (!$this->number($ch))
-				{
-					echo "<hr>{$ch}<hr>";
-				throw new Exception("Ожидалось целое");
-				}
-			}
-			$this->current_index++;
-		}while(true);
-		*/
 		$this->n=0;
+		$this->skipSpaces(true);
 			$this->int();
 			//$this->current_index--;
-		$this->skipSpaces();
+		$this->skipSpaces(true);
 			if ($this->getChar($this->current_index)!=":")
 			{
 				throw new Exception("Ожидалось \":\"");
