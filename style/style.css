@@ -1,0 +1,27 @@
+#form{
+display:inline-block;
+	width:45%;
+
+}
+#vars{
+	background-color:#e6e6e6;
+}
+#errors{
+	background-color:blue;
+	color:#b3d9ff;
+	width:45%;
+	text-transform: uppercase;
+	padding-left: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+#bnf{
+	width:45%;
+	float:right;
+	background-color:#e6e6e6;
+	padding:20px;
+	
+}
+.terminal{
+	color:#00cc00;
+}

@@ -29,6 +29,9 @@ class Translator
 	//decoct переводит число из 10-ричной системы в 8-ричную
 	private function getEight($x)
 	{
+		if($x<0)
+		return -decoct($x);
+	else
 		return decoct($x);
 	}	
 	//octdec переводит число из 8-ричной системы в десятичную
@@ -71,7 +74,7 @@ class Translator
 		$y=0;
 		$x1 = $this->getDecimal($x1);
 		$x2 = $this->getDecimal($x2);
-		$y = $x1/$x2;
+		$y = round($x1/$x2);
 		$y= $this->getEight($y);
 		return $y;
 	}
@@ -136,24 +139,24 @@ class Translator
 			$this->language();
 		}		
 		catch(Exception $e) {
-  		  echo '<pre>Выброшено исключение: ',  $e->getMessage(), "\n","символ:",$this->current_index," ",mb_substr($this->inputCode, $this->current_index,4),"</pre>";
+  		  echo '<div id="errors"><b>Ошибка:</b> ',  $e->getMessage(), "\n","</div>";
   		  $this->skipSpaces(true);
-  		  if (mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))=="")
+  		  if (mb_ereg_replace("\r|\n","",mb_substr($this->inputCode, $this->current_index,1))=="")
   		  {
   		  	$this->current_index+=2;
 			$text= mb_ereg_replace("\r\n","",mb_substr($this->inputCode, 0,$this->current_index)).
   		  "<span style='background-color:red;'>"
-  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,1))
   		  ."</span>"
-  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+2,mb_strwidth($this->inputCode)-$this->current_index));
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+1,mb_strwidth($this->inputCode)-$this->current_index));
   		  }
   		  else
   		  {
   		  $text= mb_ereg_replace("\r\n","",mb_substr($this->inputCode, 0,$this->current_index)).
   		  "<span style='background-color:red;'>"
-  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,2))
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index,1))
   		  ."</span>"
-  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+2,mb_strwidth($this->inputCode)-$this->current_index));
+  		  .mb_ereg_replace("\r\n","",mb_substr($this->inputCode, $this->current_index+1,mb_strwidth($this->inputCode)-$this->current_index));
   			}
 
   		  $text = mb_ereg_replace("@", "<p>", $text);
@@ -246,7 +249,7 @@ class Translator
 			throw new Exception("Ожидалось слово \"Конец\"");
 		}
 		$this->current_index += mb_strwidth("Конец");
-		$this->skipSpaces();
+		$this->skipSpaces(true);
 		if ($this->current_index<mb_strwidth($this->inputCode))
 			throw new Exception("Лишний код после конца программы.");
 	}
@@ -374,12 +377,14 @@ class Translator
 		if ($this->getChar($this->current_index)=="-")//минус
 		{
 			$this->current_index++;
-			$rp-=$this->block1();
+			$rp = -$this->block1();
+			//echo $rp;
 			if ($this->k!=0) return;
 		}
 		else
 		{
-			$rp+=$this->block1();
+			$rp = $this->block1();
+
 			if ($this->k!=0) return;
 		}
 		do{
@@ -388,13 +393,13 @@ class Translator
 			if ($this->getChar($this->current_index)=="+")
 			{
 				$this->current_index++;
-				$rp = $this->add($rp,$this->block2());
+				$rp = $this->add($rp,$this->block1());
 				if ($this->k!=0) return;
 			}//-
 			elseif($this->getChar($this->current_index)=="-")
 			{
 				$this->current_index++;
-				$rp = $this->sub($rp,$this->block2());
+				$rp = $this->sub($rp,$this->block1());
 				if ($this->k!=0) return;
 
 			}
@@ -413,7 +418,7 @@ class Translator
 			echo "<br>block1()";
 		$rp=0;
 	
-			$block1 =$this->block2();
+			$block1 = $this->block2();
 			if ($this->k!=0) return;
 		do{
 			$this->skipSpaces();
@@ -427,20 +432,19 @@ class Translator
 			}// / -деление
 			elseif($this->getChar($this->current_index)=="/")
 			{
+
 				$this->current_index++;
+				$block2 = $this->block2();
+				if ($block2 == 0)
+				{
+					$this->current_index-=2;
+					throw new Exception("Деление на ноль не разрешено.");
+				}
 				//$rp= $rp/$this->block3();
-				$block1 = $this->div($block1,$this->block2());
+				$block1 = $this->div($block1,$block2);
 				if ($this->k!=0) return;
 
 			}
-			/*
-			else//ошибка
-			{
-				throw new Exception("Ожидалось \"*\" или \"/\"");
-			}
-			*/
-			
-			//$rp+=1;
 		}while(($this->getChar($this->current_index)=="*")||($this->getChar($this->current_index)=="/"));
 
 		return $block1;
@@ -464,7 +468,8 @@ class Translator
 			{
 				$this->current_index++;
 				//$rp^=$this->block3();
-				$block2 = $this->power($block2,$this->block3());
+				$block3 =$this->block3();
+				$block2 = $this->power($block2,$block3);
 				if ($this->k!=0) return;
 			}
 		}while(($this->getChar($this->current_index)=="^"));
