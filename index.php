@@ -28,7 +28,11 @@ $bnf = "
 <p><b>Знак2</b> = <span class='terminal'>\"*\"</span>!<span class='terminal'>\"/\"</span></p>
 <p><b>Блок2</b> = Блок3 <span class='terminal'>\"^\"</span> ... Блок3</p>
 <p><b>Блок3</b> = Перем ! Цел ! <span class='terminal'>\"(\"</span> Прав.часть<span class='terminal'>\")\"</span> ! <span class='terminal'>\"[\"</span> Прав.часть<span class='terminal'>\"]\"</span>  N_квадр = 2</p>
-<p></p>
+<p><b>Перем</b> = БЦЦЦ</p>
+<p><b>Метка</b> = Цел</p>
+<p><b>Цел</b> = Ц...Ц</p>
+<p><b>Ц</b> = <span class='terminal'>\"0\"</span>!<span class='terminal'>\"1\"</span>!...!<span class='terminal'>\"7\"</span></p>
+<p><b>Б</b> = <span class='terminal'>\"А\"</span>!<span class='terminal'>\"Б\"</span>!<span class='terminal'>\"В\"</span>!...!<span class='terminal'>\"Я\"</span></p>
 </div>
 ";
 if (isset($_POST['code']))
@@ -42,11 +46,11 @@ $code="
 <p>Программа</p>
 <p>Ввод</p>
 <p>44:м123=4+5</p>
-<p>6:п666=5-2+77</p>
+<p>6:п666=5-2+[77-7*([2^(3)])]</p>
 <p>;</p>
 <p>Ввод</p>
-<p>24:п311=4+5+м123</p>
-<p>56:п444=3-4-2+111</p>
+<p>24:п311=4+5^2-(14/(2^2-2))+м123</p>
+<p>56:п444=(101-400)/123-2+4^(2+1)</p>
 <p>Конец</p>
 ";
 }

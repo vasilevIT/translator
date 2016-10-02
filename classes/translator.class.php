@@ -30,13 +30,22 @@ class Translator
 	private function getEight($x)
 	{
 		if($x<0)
-		return -decoct($x);
-	else
-		return decoct($x);
+		{
+			$x = abs($x);
+			return -decoct($x);
+		}
+		else
+		{
+			$x = abs($x);
+			return decoct($x);
+		}
 	}	
 	//octdec переводит число из 8-ричной системы в десятичную
 	private function getDecimal($x)
 	{
+		if ($x<0)
+		return -octdec($x);
+		else
 		return octdec($x);
 	}
 	//сложение в 8-ричной системе счисления
@@ -325,7 +334,7 @@ class Translator
 			
 			else
 			{
-				throw new Exception("Ожидалось перевод строки");
+				throw new Exception("Ожидалось знак операции или перевод строки,или \";\"");
 
 			}
 		$this->skipSpaces();
