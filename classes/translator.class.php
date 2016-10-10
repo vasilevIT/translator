@@ -397,6 +397,7 @@ class Translator
 			if ($this->k!=0) return;
 		}
 		do{
+			echo "PR = ".$this->getChar($this->current_index).$this->getChar($this->current_index+1)."<hr>";
 		$this->skipSpaces();
 			//+
 			if ($this->getChar($this->current_index)=="+")
@@ -407,12 +408,15 @@ class Translator
 			}//-
 			elseif($this->getChar($this->current_index)=="-")
 			{
+				echo $rp."<hr>";
 				$this->current_index++;
 				$rp = $this->sub($rp,$this->block1());
 				if ($this->k!=0) return;
 
 			}
 		}while(($this->getChar($this->current_index)=="+")||($this->getChar($this->current_index)=="-"));
+		//$this->block1();
+		echo "rp= ".$rp."<hr>";
 		return $rp;
 
 	}
@@ -429,7 +433,7 @@ class Translator
 	
 			$block1 = $this->block2();
 			if ($this->k!=0) return;
-		do{
+		while(($this->getChar($this->current_index)=="*")||($this->getChar($this->current_index)=="/")){
 			$this->skipSpaces();
 			//*
 			if ($this->getChar($this->current_index)=="*")
@@ -454,8 +458,9 @@ class Translator
 				if ($this->k!=0) return;
 
 			}
-		}while(($this->getChar($this->current_index)=="*")||($this->getChar($this->current_index)=="/"));
+		}
 
+		echo "block1= ".$block1."<hr>";
 		return $block1;
 	}
 	//сепенные
@@ -470,18 +475,17 @@ class Translator
 	
 			$block2 =$this->block3();
 			if ($this->k!=0) return;
-		do{
+		while(($this->getChar($this->current_index)=="^")){
 			//+
 			$this->skipSpaces();
 			if ($this->getChar($this->current_index)=="^")
 			{
 				$this->current_index++;
-				//$rp^=$this->block3();
 				$block3 =$this->block3();
 				$block2 = $this->power($block2,$block3);
-				if ($this->k!=0) return;
 			}
-		}while(($this->getChar($this->current_index)=="^"));
+		}
+		echo "block2= ".$block2."<hr>";
 		return $block2;
 	}
 	
@@ -496,10 +500,13 @@ class Translator
 		$this->skipSpaces();
 		 if($this->getChar($this->current_index)=="(")
 		 {
+		echo "( block3<hr>";
 		 	$this->current_index++;
 			 	$block3=$this->rightPart();
+			 	$this->skipSpaces();
 		 	if($this->getChar($this->current_index)==")")
 			 {
+		echo ") block3<hr>";
 		 		$this->current_index++;
 			 }
 			 else
@@ -510,6 +517,7 @@ class Translator
 		}
 		 elseif($this->getChar($this->current_index)=="[")
 		 {
+		echo "[ block3<hr>";
 		 	$this->current_index++;
 		 	$this->n++;
 		 	if ($this->n>$this->n_max)
@@ -519,13 +527,18 @@ class Translator
 		 	}
 
 			 	$block3=$this->rightPart();
+			$this->skipSpaces();
 			 	if($this->getChar($this->current_index)=="]")
 			 {
+		echo "] block3<hr>";
 		 		$this->current_index++;
 			 }
 			 else
 			 {
-			 	$k=1;
+			 	if (!$this->number($this->getChar($this->current_index)))
+			 	{
+			 		throw new Exception("Ожидалось знак операции,(,переменная,целое или закрывающая квадратная скобка");
+			 	}
 		 		throw new Exception("Нет закрывающей квадратной скобки");
 			 }
 
@@ -535,12 +548,14 @@ class Translator
 		 		$block3=$this->getVar();
 		 	}elseif($this->number($this->getChar($this->current_index)))//целое
 		 	{
+		echo "number<hr>";
 		 		$block3=$this->int();
 		 	}
 		 	else
 		 	{
 		 		throw new Exception("Ожидалось (,[,переменная или целое");
 		 	}
+		echo "block3= ".$block3."<hr>";
 		 	return $block3;
 	}
 	//получить значение переменно
