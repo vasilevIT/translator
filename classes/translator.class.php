@@ -306,7 +306,7 @@ class Translator
 				break;
 			if ($this->k!=0) return;
 			$this->skipSpaces(false);//тут надо как-то делить переменные по переводу строки
-			if(($this->getChar($this->current_index)=="\r") and ($this->getChar($this->current_index+1)=="\n"))
+			if((($this->getChar($this->current_index)=="\r") and ($this->getChar($this->current_index+1)=="\n")) or  ($this->getChar($this->current_index)=="\n") )
 			{
 				$this->skipSpaces(true);
 			}
