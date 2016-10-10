@@ -1,6 +1,7 @@
 <head>
 <link href="style/style.css" rel="stylesheet" type="text/css"></style>
 <title>Транслятор</title>
+<meta charset="utf-8">
 <script src="scripts/tinymce/tinymce.min.js"></script>
   <script>tinymce.init({selector:"textarea"});</script>
 <script src="scripts/jquery.js"></script>
@@ -14,7 +15,7 @@ function setText(text)
 </head>
 <?php
 //github hello
-require_once(__DIR__."/classes/translator.class.php");
+require_once("classes/translator.class.php");
 $bnf = "
 <div id='bnf'>
 <h3>БНФ</h3>
@@ -41,9 +42,7 @@ if (isset($_POST['code']))
 }
 else
 {
-$code="
-
-<p>Программа</p>
+$code="<p>Программа</p>
 <p>Ввод</p>
 <p>44:м123=-4+5</p>
 <p>6:п666=5-2+[77-7*([2^(3)])]</p>
@@ -53,8 +52,7 @@ $code="
 <p>56:п444=(101-400)/123-2+4^(2+1)</p>
 <p>1:а123 = 5</p>
 <p>2:а123 = а123+5</p>
-<p>Конец</p>
-";
+<p>Конец</p>";
 }
 $form="
 <div id='form'>
