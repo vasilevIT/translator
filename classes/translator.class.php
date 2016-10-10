@@ -137,7 +137,6 @@ class Translator
 			mb_regex_encoding("UTF-8");
 			$interenc = mb_internal_encoding();
 			$this->inputCode = mb_convert_encoding($this->inputCode,$interenc,"UTF-8");
-			//$this->inputCode = mb_ereg_replace("[\s\n]","",$this->inputCode);
 			$this->inputCode = mb_ereg_replace("<span.*?>|<\/span>","",$this->inputCode);
 			$this->inputCode = mb_ereg_replace("<p>","@",$this->inputCode);
 			$this->inputCode = mb_ereg_replace("</p>","#",$this->inputCode);
@@ -170,9 +169,7 @@ class Translator
 
   		  $text = mb_ereg_replace("@", "<p>", $text);
   		  $text = mb_ereg_replace("#", "</p>", $text);
-  		 // $text = mb_ereg_replace("\&nbsp;", " ", $text);
   		  $text = mb_ereg_replace("\r\n", "", $text);
-  		  //echo $text;
   		  //заменяем в нашем textarea тест на этот
   		  echo "<script>
   		  setText(\"{$text}\");
@@ -183,7 +180,6 @@ class Translator
 		}
 		$text = mb_ereg_replace("@", "<p>", $this->inputCode);
   		  $text = mb_ereg_replace("#", "</p>", $text);
-  		 // $text = mb_ereg_replace("\&nbsp;", " ", $text);
   		  $text = mb_ereg_replace("\r\n", "", $text);
   		  echo "<script>
   		  setText(\"{$text}\");
@@ -244,14 +240,12 @@ class Translator
 		*/
 		$this->skipSpaces(true);
 		if ( mb_substr($this->inputCode,$this->current_index,mb_strwidth("Программа")) != "Программа")
-		//if (mb_strtolower( mb_substr($this->inputCode,$this->current_index,mb_strwidth("Программа"))) != "программа")
 		{
 			throw new Exception("Ожидалось слово \"Программа\"");
 		}
 		$this->current_index += mb_strwidth("Программа");;
 		$this->skipSpaces();
 		$this->zvenia();
-		if ($this->k!=0) return;
 		$this->skipSpaces();
 		if (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец")) != "Конец")
 		{
@@ -278,10 +272,7 @@ class Translator
 				$this->current_index++;
 				continue;
 			}
-
-			if ($this->current_index>mb_strwidth($this->inputCode))//Просто проверка
-				break;
-		$this->skipSpaces();
+			$this->skipSpaces();
 		}while( (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец"))!="Конец"));//Пока не "Конец"
 
 	}
@@ -317,17 +308,9 @@ class Translator
 			$this->skipSpaces(false);//тут надо как-то делить переменные по переводу строки
 			if(($this->getChar($this->current_index)=="\r") and ($this->getChar($this->current_index+1)=="\n"))
 			{
-				//$this->current_index +=2;
 				$this->skipSpaces(true);
 			}
-			/* // изменили разделитель: запятую на перевод строки
-			else
-			if ($this->getChar($this->current_index)==",")
-			{
-				$this->current_index++;
-			}
-			*/
-			elseif(!(($this->missInt($this->current_index)!=":") and ($this->getChar($this->current_index)!=";") and /*($this->getChar($this->current_index)!=",") and */ (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец")) != "Конец")))
+			elseif(!(($this->missInt($this->current_index)!=":") and ($this->getChar($this->current_index)!=";") and  (mb_substr($this->inputCode,$this->current_index,mb_strwidth("Конец")) != "Конец")))
 			{
 				;//Выходим
 			}
@@ -397,7 +380,6 @@ class Translator
 			if ($this->k!=0) return;
 		}
 		do{
-			echo "PR = ".$this->getChar($this->current_index).$this->getChar($this->current_index+1)."<hr>";
 		$this->skipSpaces();
 			//+
 			if ($this->getChar($this->current_index)=="+")
@@ -408,15 +390,12 @@ class Translator
 			}//-
 			elseif($this->getChar($this->current_index)=="-")
 			{
-				echo $rp."<hr>";
 				$this->current_index++;
 				$rp = $this->sub($rp,$this->block1());
 				if ($this->k!=0) return;
 
 			}
 		}while(($this->getChar($this->current_index)=="+")||($this->getChar($this->current_index)=="-"));
-		//$this->block1();
-		echo "rp= ".$rp."<hr>";
 		return $rp;
 
 	}
@@ -460,7 +439,6 @@ class Translator
 			}
 		}
 
-		echo "block1= ".$block1."<hr>";
 		return $block1;
 	}
 	//сепенные
@@ -485,7 +463,6 @@ class Translator
 				$block2 = $this->power($block2,$block3);
 			}
 		}
-		echo "block2= ".$block2."<hr>";
 		return $block2;
 	}
 	
@@ -500,24 +477,24 @@ class Translator
 		$this->skipSpaces();
 		 if($this->getChar($this->current_index)=="(")
 		 {
-		echo "( block3<hr>";
 		 	$this->current_index++;
 			 	$block3=$this->rightPart();
 			 	$this->skipSpaces();
 		 	if($this->getChar($this->current_index)==")")
 			 {
-		echo ") block3<hr>";
 		 		$this->current_index++;
 			 }
 			 else
 			 {
-			 	$k=1;
+			 	if (!$this->number($this->getChar($this->current_index)))
+			 	{
+			 		throw new Exception("Ожидалось знак операции,(,переменная,целое или закрывающая круглая скобка");
+			 	}
 		 		throw new Exception("Нет закрывающей круглой скобки");
 			 }
 		}
 		 elseif($this->getChar($this->current_index)=="[")
 		 {
-		echo "[ block3<hr>";
 		 	$this->current_index++;
 		 	$this->n++;
 		 	if ($this->n>$this->n_max)
@@ -530,7 +507,6 @@ class Translator
 			$this->skipSpaces();
 			 	if($this->getChar($this->current_index)=="]")
 			 {
-		echo "] block3<hr>";
 		 		$this->current_index++;
 			 }
 			 else
@@ -548,14 +524,12 @@ class Translator
 		 		$block3=$this->getVar();
 		 	}elseif($this->number($this->getChar($this->current_index)))//целое
 		 	{
-		echo "number<hr>";
 		 		$block3=$this->int();
 		 	}
 		 	else
 		 	{
 		 		throw new Exception("Ожидалось (,[,переменная или целое");
 		 	}
-		echo "block3= ".$block3."<hr>";
 		 	return $block3;
 	}
 	//получить значение переменно
@@ -608,7 +582,6 @@ class Translator
 			//считываем переменную
 			//буква
 			$name=$this->readVar();
-			//$this->vars[$name] = 0;
 			return $name;
 	}
 	private function int()
@@ -630,7 +603,6 @@ class Translator
 			else
 			{
 				break;
-				//throw new Exception("");
 			}
 
 		}while(true);
